@@ -2,54 +2,56 @@ package config
 
 import (
 	"errors"
-	"strings"
+	"fmt"
 )
 
-// Config holds the parsed CLI configuration for an envdiff run.
+// Config holds all runtime configuration for envdiff.
 type Config struct {
-	Files   []string
-	Labels  []string
-	Output  string
-	ShowAll bool
-	OnlyMissing  bool
+	Files       []string
+	Labels      []string
+	Format      string
+	ShowAll     bool
+	OnlyMissing bool
 	OnlyMismatch bool
-	FilterKeys   []string
-	NoColor bool
+	FilterKeys  []string
+	IgnoreFile  string
 }
 
-// Validate checks that the config is valid before use.
+var validFormats = map[string]bool{
+	"text":     true,
+	"json":     true,
+	"csv":      true,
+	"markdown": true,
+	"table":    true,
+	"yaml":     true,
+	"html":     true,
+}
+
+// Validate checks that the Config is consistent and complete.
 func (c *Config) Validate() error {
 	if len(c.Files) < 2 {
 		return errors.New("at least two .env files are required")
 	}
 	if len(c.Labels) > 0 && len(c.Labels) != len(c.Files) {
-		return errors.New("number of labels must match number of files")
+		return fmt.Errorf("number of labels (%d) must match number of files (%d)",
+			len(c.Labels), len(c.Files))
 	}
-	validOutputs := map[string]bool{
-		"text":     true,
-		"json":     true,
-		"csv":      true,
-		"markdown": true,
-		"table":    true,
-		"yaml":     true,
-	}
-	format := strings.ToLower(c.Output)
-	if format == "" {
-		c.Output = "text"
-	} else if !validOutputs[format] {
-		return errors.New("unsupported output format: " + c.Output)
+	if c.Format != "" && !validFormats[c.Format] {
+		return fmt.Errorf("unknown format %q; valid formats: text, json, csv, markdown, table, yaml, html", c.Format)
 	}
 	if c.OnlyMissing && c.OnlyMismatch {
 		return errors.New("--only-missing and --only-mismatch are mutually exclusive")
 	}
+	if c.ShowAll && (c.OnlyMissing || c.OnlyMismatch) {
+		return errors.New("--show-all cannot be combined with --only-missing or --only-mismatch")
+	}
 	return nil
 }
 
-// FilterKeySet returns the FilterKeys as a set for O(1) lookup.
-func (c *Config) FilterKeySet() map[string]bool {
-	set := make(map[string]bool, len(c.FilterKeys))
-	for _, k := range c.FilterKeys {
-		set[strings.TrimSpace(k)] = true
+// DefaultFormat returns the configured format or "text" as fallback.
+func (c *Config) DefaultFormat() string {
+	if c.Format == "" {
+		return "text"
 	}
-	return set
+	return c.Format
 }
