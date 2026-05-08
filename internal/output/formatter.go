@@ -7,13 +7,13 @@ import (
 	"github.com/user/envdiff/internal/diff"
 )
 
-// Formatter is the interface all output formatters implement.
+// Formatter writes diff results to an io.Writer in a specific format.
 type Formatter interface {
 	Write(w io.Writer, results []diff.Result) error
 }
 
-// NewFormatter returns a Formatter for the given format string.
-// Supported formats: "text", "json", "csv", "markdown", "table".
+// NewFormatter returns a Formatter for the given format name.
+// Supported formats: text, json, csv, markdown, table, yaml.
 func NewFormatter(format string) (Formatter, error) {
 	switch format {
 	case "text", "":
@@ -22,11 +22,13 @@ func NewFormatter(format string) (Formatter, error) {
 		return &jsonFormatter{}, nil
 	case "csv":
 		return &csvFormatter{}, nil
-	case "markdown":
+	case "markdown", "md":
 		return &markdownFormatter{}, nil
 	case "table":
 		return &tableFormatter{}, nil
+	case "yaml", "yml":
+		return &yamlFormatter{}, nil
 	default:
-		return nil, fmt.Errorf("unknown format: %q (supported: text, json, csv, markdown, table)", format)
+		return nil, fmt.Errorf("unknown format %q: supported formats are text, json, csv, markdown, table, yaml", format)
 	}
 }
