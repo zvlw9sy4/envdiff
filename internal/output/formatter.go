@@ -7,28 +7,30 @@ import (
 	"github.com/user/envdiff/internal/diff"
 )
 
-// Formatter writes diff results to an io.Writer in a specific format.
+// Formatter writes diff results to an io.Writer.
 type Formatter interface {
 	Write(w io.Writer, results []diff.Result) error
 }
 
 // NewFormatter returns a Formatter for the given format name.
-// Supported formats: text, json, csv, markdown, table, yaml.
+// Supported formats: text, json, csv, markdown, table, yaml, html.
 func NewFormatter(format string) (Formatter, error) {
 	switch format {
 	case "text", "":
-		return &textFormatter{}, nil
+		return &TextFormatter{}, nil
 	case "json":
-		return &jsonFormatter{}, nil
+		return &JSONFormatter{}, nil
 	case "csv":
-		return &csvFormatter{}, nil
+		return &CSVFormatter{}, nil
 	case "markdown", "md":
-		return &markdownFormatter{}, nil
+		return &MarkdownFormatter{}, nil
 	case "table":
-		return &tableFormatter{}, nil
-	case "yaml", "yml":
-		return &yamlFormatter{}, nil
+		return &TableFormatter{}, nil
+	case "yaml":
+		return &YAMLFormatter{}, nil
+	case "html":
+		return &HTMLFormatter{}, nil
 	default:
-		return nil, fmt.Errorf("unknown format %q: supported formats are text, json, csv, markdown, table, yaml", format)
+		return nil, fmt.Errorf("unknown output format: %q", format)
 	}
 }
