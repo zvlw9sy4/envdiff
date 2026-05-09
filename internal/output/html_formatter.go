@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"sort"
 	"strings"
 
 	"github.com/user/envdiff/internal/diff"
@@ -25,22 +26,8 @@ func (f *HTMLFormatter) Write(w io.Writer, results []diff.Result) error {
 		return nil
 	}
 
-	// Collect env labels from first result
-	envs := make([]string, 0, len(results[0].Values))
-	for _, r := range results {
-		for env := range r.Values {
-			envs = append(envs, env)
-			break
-		}
-		break
-	}
-	// Use stable order from first result
-	for _, r := range results[:1] {
-		envs = envs[:0]
-		for k := range r.Values {
-			envs = append(envs, k)
-		}
-	}
+	// Collect env labels from the first result and sort them for a stable, deterministic order.
+	envs := collectEnvKeys(results[0])
 
 	fmt.Fprintln(w, `<table>`)
 	fmt.Fprintf(w, "<tr><th>Key</th><th>Status</th>")
@@ -68,4 +55,15 @@ func (f *HTMLFormatter) Write(w io.Writer, results []diff.Result) error {
 
 	fmt.Fprintln(w, `</table></body></html>`)
 	return nil
+}
+
+// collectEnvKeys returns a sorted slice of environment keys from the given result.
+// Sorting ensures the column order in the HTML table is deterministic across runs.
+func collectEnvKeys(r diff.Result) []string {
+	keys := make([]string, 0, len(r.Values))
+	for k := range r.Values {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }
