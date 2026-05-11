@@ -46,19 +46,7 @@ func PrintReport(w io.Writer, results []Result, envOrder []string) {
 	fmt.Fprintln(w, strings.Repeat("-", len(header)))
 
 	for _, r := range results {
-		var statusLabel, color string
-		switch r.Status {
-		case StatusMatch:
-			statusLabel = "OK"
-			color = colorGreen
-		case StatusMismatch:
-			statusLabel = "MISMATCH"
-			color = colorYellow
-		case StatusMissing:
-			statusLabel = "MISSING"
-			color = colorRed
-		}
-
+		statusLabel, color := statusInfo(r.Status)
 		line := fmt.Sprintf("%s%-30s  %-10s%s  ", color, r.Key, statusLabel, colorReset)
 		for _, env := range envCols {
 			val, ok := r.Values[env]
@@ -70,5 +58,19 @@ func PrintReport(w io.Writer, results []Result, envOrder []string) {
 			line += fmt.Sprintf("%-20s  ", val)
 		}
 		fmt.Fprintln(w, line)
+	}
+}
+
+// statusInfo returns the display label and ANSI color code for a given Status.
+func statusInfo(s Status) (label, color string) {
+	switch s {
+	case StatusMatch:
+		return "OK", colorGreen
+	case StatusMismatch:
+		return "MISMATCH", colorYellow
+	case StatusMissing:
+		return "MISSING", colorRed
+	default:
+		return "UNKNOWN", colorReset
 	}
 }
