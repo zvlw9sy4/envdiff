@@ -17,6 +17,8 @@ type EnvFile struct {
 
 // LoadFiles loads multiple .env files from the given paths.
 // The label for each file defaults to its base filename unless overridden.
+// Returns an error if the number of labels does not match the number of paths,
+// if a file does not exist, or if parsing fails.
 func LoadFiles(paths []string, labels []string) ([]EnvFile, error) {
 	if len(labels) > 0 && len(labels) != len(paths) {
 		return nil, fmt.Errorf("number of labels (%d) must match number of files (%d)", len(labels), len(paths))
@@ -58,4 +60,16 @@ func ToEnvMaps(files []EnvFile) ([]string, []map[string]string) {
 		maps[i] = f.Data
 	}
 	return labels, maps
+}
+
+// KeyCount returns the total number of unique keys across all provided EnvFiles.
+// A key is counted once regardless of how many files it appears in.
+func KeyCount(files []EnvFile) int {
+	seen := make(map[string]struct{})
+	for _, f := range files {
+		for k := range f.Data {
+			seen[k] = struct{}{}
+		}
+	}
+	return len(seen)
 }
