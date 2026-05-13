@@ -3,6 +3,7 @@ package output
 import (
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 
 	"github.com/user/envdiff/internal/diff"
@@ -16,12 +17,13 @@ func (f *tableFormatter) Write(w io.Writer, results []diff.Result) error {
 		return nil
 	}
 
-	// Collect all environment labels from first result
+	// Collect all environment labels from first result and sort for consistent output
 	envLabels := make([]string, 0)
 	if len(results) > 0 {
 		for label := range results[0].Values {
 			envLabels = append(envLabels, label)
 		}
+		sort.Strings(envLabels)
 	}
 
 	// Calculate column widths
