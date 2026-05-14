@@ -79,6 +79,23 @@ func TestFindDuplicates_SortedOutput(t *testing.T) {
 	}
 }
 
+func TestFindDuplicates_EmptyInput(t *testing.T) {
+	results := FindDuplicates(map[string][]string{})
+	if len(results) != 0 {
+		t.Errorf("expected no duplicates for empty input, got %d", len(results))
+	}
+}
+
+func TestFindDuplicates_EmptyLines(t *testing.T) {
+	envLines := map[string][]string{
+		"env": {"", "", "HOST=localhost"},
+	}
+	results := FindDuplicates(envLines)
+	if len(results) != 0 {
+		t.Errorf("expected no duplicates when empty lines present, got %d", len(results))
+	}
+}
+
 func TestSplitLine_ValidLine(t *testing.T) {
 	key, value := splitLine("DATABASE_URL=postgres://localhost/db")
 	if key != "DATABASE_URL" {
