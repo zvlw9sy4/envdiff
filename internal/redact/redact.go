@@ -68,5 +68,18 @@ func (r *Redactor) ApplyToMap(env map[string]string) map[string]string {
 	return out
 }
 
+// SensitiveKeys returns the list of keys from the given env map that match
+// any redaction pattern. The returned slice is sorted in the order the keys
+// are encountered during iteration.
+func (r *Redactor) SensitiveKeys(env map[string]string) []string {
+	keys := make([]string, 0)
+	for k := range env {
+		if r.IsSensitive(k) {
+			keys = append(keys, k)
+		}
+	}
+	return keys
+}
+
 // RedactedValue is the placeholder string used for sensitive values.
 func RedactedValue() string { return strings.Clone(redactedValue) }
