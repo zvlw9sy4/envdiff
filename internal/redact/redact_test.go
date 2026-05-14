@@ -87,3 +87,22 @@ func TestApplyToMap_DoesNotMutateOriginal(t *testing.T) {
 		t.Error("original map should not be mutated")
 	}
 }
+
+func TestIsSensitive_CaseInsensitiveMatch(t *testing.T) {
+	tests := []struct {
+		key      string
+		want     bool
+	}{
+		{"db_password", true},
+		{"Db_Password", true},
+		{"DB_PASSWORD", true},
+		{"app_port", false},
+	}
+	r, _ := redact.New(nil)
+	for _, tt := range tests {
+		got := r.IsSensitive(tt.key)
+		if got != tt.want {
+			t.Errorf("IsSensitive(%q) = %v, want %v", tt.key, got, tt.want)
+		}
+	}
+}
