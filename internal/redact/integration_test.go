@@ -69,3 +69,12 @@ func TestRedact_CustomPatterns(t *testing.T) {
 		t.Error("PUBLIC_URL should not be redacted")
 	}
 }
+
+// TestRedact_InvalidPattern verifies that New returns an error when given a
+// malformed regular expression, rather than silently ignoring it.
+func TestRedact_InvalidPattern(t *testing.T) {
+	_, err := redact.New([]string{"[invalid(pattern"})
+	if err == nil {
+		t.Error("expected error for invalid regex pattern, got nil")
+	}
+}
