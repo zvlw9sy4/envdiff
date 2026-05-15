@@ -1,6 +1,7 @@
 package lint_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/user/envdiff/internal/lint"
@@ -74,5 +75,16 @@ func TestIssue_String(t *testing.T) {
 	s := i.String()
 	if s == "" {
 		t.Error("expected non-empty string representation")
+	}
+}
+
+func TestIssue_String_ContainsKeyAndMessage(t *testing.T) {
+	i := lint.Issue{Key: "MY_VAR", Message: "something is wrong", Severity: lint.SeverityError}
+	s := i.String()
+	if !strings.Contains(s, "MY_VAR") {
+		t.Errorf("expected string to contain key %q, got %q", "MY_VAR", s)
+	}
+	if !strings.Contains(s, "something is wrong") {
+		t.Errorf("expected string to contain message %q, got %q", "something is wrong", s)
 	}
 }
