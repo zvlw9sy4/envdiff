@@ -106,16 +106,22 @@ func TestSplitLine_ValidLine(t *testing.T) {
 	}
 }
 
-func TestSplitLine_Comment(t *testing.T) {
-	key, value := splitLine("# this is a comment")
-	if key != "" || value != "" {
-		t.Errorf("expected empty strings for comment line")
+func TestSplitLine_ValueWithEquals(t *testing.T) {
+	key, value := splitLine("EQUATION=a=b=c")
+	if key != "EQUATION" {
+		t.Errorf("expected EQUATION, got %s", key)
+	}
+	if value != "a=b=c" {
+		t.Errorf("expected a=b=c, got %s", value)
 	}
 }
 
-func TestSplitLine_EmptyLine(t *testing.T) {
-	key, value := splitLine("")
-	if key != "" || value != "" {
-		t.Errorf("expected empty strings for blank line")
+func TestSplitLine_NoEquals(t *testing.T) {
+	key, value := splitLine("NOEQUALS")
+	if key != "" {
+		t.Errorf("expected empty key for line without '=', got %s", key)
+	}
+	if value != "" {
+		t.Errorf("expected empty value for line without '=', got %s", value)
 	}
 }
